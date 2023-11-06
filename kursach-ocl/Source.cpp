@@ -1,35 +1,43 @@
-﻿#include <iostream>
-#include "MorphologyTransformation.h"
+#include<CL/cl.hpp>
+#include<iostream>
+#include <fstream>
+#include "Matrix.cpp"
 
-void Dilatation(int kernel, const int(*_matrix)[100], int(*_transformed)[100])
+
+
+int main()
 {
-    int _n = 100;
-    int _m = 100;
-    int WHITE = 1;
-    int BLACK = 0;
 
-    for (int i = 0; i < _n; i++) {
-        for (int j = 0; j < _m; j++) {
+    std::vector<cl::Platform> platforms;
+    cl::Platform::get(&platforms);
 
-            if (_matrix[i][j] == BLACK) {
+    auto platform = platforms.front();
+    std::vector<cl::Device> devices;
+    platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
 
-                for (int k = i - kernel / 2; k < i + kernel / 2; k++)
-                {
-                    for (int l = j - kernel / 2; l < j + kernel / 2; l++)
-                    {
-                        if (k >= 0 && l >= 0 && k + kernel / 2 < _n && l + kernel / 2 < _m)
-                            _transformed[k][l] = BLACK;
-                    }
-                }
+    auto device = devices.front();
 
-            }
-        }
-    }
-}
+    std::ifstream helloWorldFile("hello.cl");
+    std::string src(std::istreambuf_iterator<char>(helloWorldFile), (std::istreambuf_iterator<char>()));
+
+    cl::Program::Sources sources(1, std::make_pair(src.c_str(), src.length() + 1));
+
+    cl::Context context(device);
+    cl::Program program(context, sources);
+
+    auto err = program.build("-cl-std=CL1.2");
+
+    cl_build_status status = program.getBuildInfo<CL_PROGRAM_BUILD_STATUS>(device);
+    if (status == CL_BUILD_ERROR)
+
+    // Get the build log
+    //std::string namee = device.getInfo<CL_DEVICE_NAME>();
+    //std::string buildlog = program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
+    std::cerr << "Build log for " << device.getInfo<CL_DEVICE_NAME>() << ":" << std::endl
+        << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) << std::endl;
 
 
-int main() {
-	int matrix[100][100]{
+    int matrix[100][100]{
 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -230,25 +238,32 @@ int main() {
 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    };;
-	Matrix m;
-	for (int i = 0; i < 100; i++) {
-		for (int j = 0; j < 100; j++) {
-			m.array[i][j] = matrix[i][j];
-		}
-	}
+    };;;
+    int regionSize = 4;
+    cl::Buffer matrixBuf(context, CL_MEM_READ_WRITE, sizeof(matrix));
+    cl::Buffer transformedBuf(context, CL_MEM_READ_WRITE, sizeof(transformed));
+    cl::Buffer regionSizeBuf(context, CL_MEM_READ_WRITE, sizeof(regionSize));
+    cl::Kernel kernel(program, "Dilatation", &err);
+    
+    kernel.setArg(0, regionSizeBuf);
+    kernel.setArg(1, matrixBuf);
+    kernel.setArg(2, transformedBuf);
 
-
-    //MorphologyTransformation mt{ &m };
-	//mt.Dilatation(4);
-	//mt.Print();
-
-
-    Dilatation(1, matrix, transformed);
+    cl::CommandQueue queue(context, device);
+    queue.enqueueTask(kernel);
+    queue.enqueueReadBuffer(matrixBuf, GL_TRUE, 0, sizeof(matrixBuf), matrix);
+    queue.enqueueWriteBuffer(transformedBuf, GL_TRUE, 0, sizeof(transformedBuf), transformed);
 
     
+   /* for (int i = 0; i < 100; i++)
+    {
+        for (int j = 0; j < 100; j++)
+        {
+            std::cout << transformed[i][j];
+        }
+    }*/
 
+
+    std::cin.get();
 
 }
-
-
